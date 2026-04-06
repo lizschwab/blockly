@@ -219,7 +219,7 @@ export function registerCut() {
       } else if (isIDeletable(focused)) {
         eventUtils.setGroup(true);
         focused.dispose();
-        eventUtils.setGroup(true);
+        eventUtils.setGroup(false);
       }
       return !!copyData;
     },
