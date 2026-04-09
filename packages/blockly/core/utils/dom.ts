@@ -6,6 +6,7 @@
 
 // Former goog.module ID: Blockly.utils.dom
 
+import * as aria from './aria.js';
 import type {Svg} from './svg.js';
 
 /**
@@ -56,6 +57,17 @@ export function createSvgElement<T extends SVGElement>(
   opt_parent?: Element | null,
 ): T {
   const e = document.createElementNS(SVG_NS, `${name}`) as T;
+  /**
+   * For svg and group (g) elements, we set the role to generic so that they are ignored by assistive technologies.
+   */
+  if (
+    name === 'svg' ||
+    name === 'g' ||
+    e.tagName === 'svg' ||
+    e.tagName === 'g'
+  ) {
+    aria.setRole(e, aria.Role.GENERIC);
+  }
   for (const key in attrs) {
     e.setAttribute(key, `${attrs[key]}`);
   }
