@@ -7,7 +7,7 @@
 // Former goog.module ID: Blockly.utils.dom
 
 import * as aria from './aria.js';
-import type {Svg} from './svg.js';
+import {Svg} from './svg.js';
 
 /**
  * Required name space for SVG elements.
@@ -61,10 +61,10 @@ export function createSvgElement<T extends SVGElement>(
    * For svg and group (g) elements, we set the role to generic so that they are ignored by assistive technologies.
    */
   if (
-    name === 'svg' ||
-    name === 'g' ||
-    e.tagName === 'svg' ||
-    e.tagName === 'g'
+    name === Svg.SVG.toString() ||
+    name === Svg.G.toString() ||
+    e.tagName === Svg.SVG.toString() ||
+    e.tagName === Svg.G.toString()
   ) {
     aria.setRole(e, aria.Role.GENERIC);
   }

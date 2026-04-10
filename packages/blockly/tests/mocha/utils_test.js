@@ -446,7 +446,7 @@ suite('Utils', function () {
       });
       test('svg elements of type svg have the generic role by default', function () {
         const svgSvg = Blockly.utils.dom.createSvgElement(
-          Blockly.utils.Svg.G,
+          Blockly.utils.Svg.SVG,
           {},
         );
         const svg = Blockly.utils.dom.createSvgElement('svg', {});
