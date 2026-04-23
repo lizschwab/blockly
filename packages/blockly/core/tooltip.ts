@@ -364,6 +364,29 @@ export function hide() {
 }
 
 /**
+ * Display the tooltip for a given target.
+ */
+export function display(target: AnyDuringMigration, workspace?: WorkspaceSvg) {
+  // If the target is not the same element currently displaying a tooltip, hide
+  // the existing tooltip and set the target as our element.
+  if (element !== target) {
+    hide();
+    poisonedElement = null;
+    element = target;
+  }
+
+  if (!element || !(element as AnyDuringMigration).tooltip) {
+    // No tooltip here to show.
+    return;
+  } else if (blocked) {
+    // Someone doesn't want us to show tooltips.  We are probably handling a
+    // user gesture, such as a click or drag.
+    return;
+  }
+  show(workspace);
+}
+
+/**
  * Hide any in-progress tooltips and block showing new tooltips until the next
  * call to unblock().
  *
