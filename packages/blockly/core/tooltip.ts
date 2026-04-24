@@ -8,6 +8,7 @@
 
 import * as browserEvents from './browser_events.js';
 import * as common from './common.js';
+import type {IFocusableNode} from './interfaces/i_focusable_node.js';
 import * as blocklyString from './utils/string.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
 
@@ -365,8 +366,12 @@ export function hide() {
 
 /**
  * Display the tooltip for a given target.
+ *
+ * @internal
+ * @param target The node upon which the tooltip should be displayed.
+ * @param workspace The target node's workspace.
  */
-export function display(target: AnyDuringMigration, workspace?: WorkspaceSvg) {
+export function display(target: IFocusableNode, workspace?: WorkspaceSvg) {
   // If the target is not the same element currently displaying a tooltip, hide
   // the existing tooltip and set the target as our element.
   if (element !== target) {
@@ -383,6 +388,14 @@ export function display(target: AnyDuringMigration, workspace?: WorkspaceSvg) {
     // user gesture, such as a click or drag.
     return;
   }
+
+  // Set the position to just below the element with horizontal alignment based
+  // on the target's RTL/LTR orientation.
+  const targetRect = target.getFocusableElement().getBoundingClientRect();
+  const rtl = element.RTL;
+  lastX = rtl ? targetRect.x + targetRect.width : targetRect.x;
+  lastY = targetRect.y + targetRect.height;
+
   show(workspace);
 }
 

@@ -1447,7 +1447,7 @@ suite('Keyboard Shortcut Items', function () {
       block.setTooltip('Tooltip Text');
       this.injectionDiv.dispatchEvent(event);
 
-      assert(Blockly.Tooltip.isVisible());
+      assert.isTrue(Blockly.Tooltip.isVisible());
     });
 
     test('Displays new tooltip on a block using the keyboard shortcut if tooltip for another block is already displayed', function () {
@@ -1462,16 +1462,16 @@ suite('Keyboard Shortcut Items', function () {
       this.injectionDiv.dispatchEvent(event);
 
       // We have block1 focused; we should see block1's tooltip
-      assert(Blockly.Tooltip.isVisible());
-      assert(Blockly.Tooltip.getDiv().innerText === 'block1');
+      assert.isTrue(Blockly.Tooltip.isVisible());
+      assert.isTrue(Blockly.Tooltip.getDiv().innerText === 'block1');
 
       // Set focus to block2 and show its tooltip
       Blockly.getFocusManager().focusNode(block2);
       this.injectionDiv.dispatchEvent(event);
 
       // Now we have block2 focused; we should see block2's tooltip
-      assert(Blockly.Tooltip.isVisible());
-      assert(Blockly.Tooltip.getDiv().innerText === 'block2');
+      assert.isTrue(Blockly.Tooltip.isVisible());
+      assert.isTrue(Blockly.Tooltip.getDiv().innerText === 'block2');
     });
 
     test('Do not show tooltip if drag in progress', function () {
@@ -1483,7 +1483,7 @@ suite('Keyboard Shortcut Items', function () {
       block.setTooltip('Tooltip Text');
       this.injectionDiv.dispatchEvent(event);
 
-      assert(!Blockly.Tooltip.isVisible());
+      assert.isFalse(Blockly.Tooltip.isVisible());
     });
   });
 });

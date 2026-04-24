@@ -987,8 +987,10 @@ export function registerShowTooltip() {
     preconditionFn: (workspace) => !workspace.isDragging(),
     callback: (workspace) => {
       const target = getFocusManager().getFocusedNode();
-      keyboardNavigationController.setIsActive(true);
-      Tooltip.display(target, workspace);
+      if (target !== null) {
+        keyboardNavigationController.setIsActive(true);
+        Tooltip.display(target, workspace);
+      }
       return true;
     },
     keyCodes: [ctrlJ],
