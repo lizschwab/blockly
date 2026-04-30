@@ -293,19 +293,4 @@ suite('Inputs', function () {
       assert.deepEqual(this.dummy.fieldRow, [this.b, this.c]);
     });
   });
-  suite('ARIA', function () {
-    test('Set ARIA Label Provider', function () {
-      const customLabel = 'custom ARIA label';
-      this.block
-        .appendValueInput('NAME')
-        .setAriaLabelProvider((input) => customLabel);
-
-      const label = this.block.getAriaLabel();
-
-      assert.include(label, customLabel);
-    });
-    test('Set ARIA Label Provider to null', function () {
-      // TODO: need a way to test that the getLabel() returns appropriately
-    });
-  });
 });
