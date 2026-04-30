@@ -2130,6 +2130,9 @@ export class Block {
         input.setAlign(alignment);
       }
     }
+    if (element['ariaLabelText']) {
+      input.setAriaLabelProvider(element['ariaLabelText']);
+    }
     return input;
   }
 
