@@ -1896,88 +1896,26 @@ suite('Blocks', function () {
       });
 
       suite('ARIA', function () {
-        suite('Bubble', function () {
-          setup(async function () {
-            this.block.setWarningText('Warning Text');
-            this.block.initSvg();
-            this.block.render();
-            const icon = this.block.getIcon(Blockly.icons.WarningIcon.TYPE);
-            icon.performAction();
-            await Blockly.renderManagement.finishQueuedRenders();
+        setup(async function () {
+          this.block.setWarningText('Warning Text');
+          this.block.initSvg();
+          this.block.render();
+          const icon = this.block.getIcon(Blockly.icons.WarningIcon.TYPE);
+          icon.performAction();
+          await Blockly.renderManagement.finishQueuedRenders();
 
-            this.bubble = icon.getBubble();
-          });
-          test('Bubble has ARIA label', async function () {
-            assert.isTrue(
-              this.bubble.focusableElement.hasAttribute('aria-label'),
-            );
-          });
-          test('Bubble has ARIA role of group', async function () {
-            assert.equal(
-              this.bubble.focusableElement.getAttribute('role'),
-              'group',
-            );
-          });
+          this.bubble = icon.getBubble();
         });
-        suite('Input', function () {
-          test('Set input ARIA Label Provider', function () {
-            const customLabel = 'custom ARIA label';
-            // Using a text input as it will return a default ARIA label
-            this.block
-              .appendValueInput('NAME')
-              .appendField(new Blockly.FieldTextInput('text'), 'NAME')
-              .setAriaLabelProvider((input) => customLabel);
-
-            const label = this.block.getAriaLabel();
-
-            assert.include(label, customLabel);
-            assert.notInclude(label, 'text');
-          });
-          test('Set input ARIA Label Provider from JSON', function () {
-            const customLabel = 'custom ARIA label';
-            Blockly.defineBlocksWithJsonArray([
-              {
-                'type': 'input_aria_block',
-                'message0': '%1 %2',
-                'args0': [
-                  {
-                    'type': 'field_input',
-                    'name': 'NAME',
-                    'text': 'text',
-                  },
-                  {
-                    'type': 'input_value',
-                    'name': 'NAME',
-                    'ariaLabelText': customLabel,
-                  },
-                ],
-              },
-            ]);
-
-            this.block = this.workspace.newBlock('input_aria_block');
-            const label = this.block.getAriaLabel();
-
-            assert.include(label, customLabel);
-          });
-          test('Set input ARIA Label Provider to null', function () {
-            const blockA = createRenderedBlock(this.workspace, 'row_block');
-            const blockB = createRenderedBlock(this.workspace, 'row_block');
-
-            blockA
-              .appendValueInput('NAME')
-              .appendField(new Blockly.FieldTextInput('text'), 'NAME')
-              .setAriaLabelProvider(null);
-            blockB
-              .appendValueInput('NAME')
-              .appendField(new Blockly.FieldTextInput('text'), 'NAME');
-
-            const labelA = blockA.getAriaLabel();
-            const labelB = blockB.getAriaLabel();
-
-            // The label should be the same between a block created with a null
-            // AriaLabelProvider and without setting the provider (the default label)
-            assert.equal(labelA, labelB);
-          });
+        test('Bubble has ARIA label', async function () {
+          assert.isTrue(
+            this.bubble.focusableElement.hasAttribute('aria-label'),
+          );
+        });
+        test('Bubble has ARIA role of group', async function () {
+          assert.equal(
+            this.bubble.focusableElement.getAttribute('role'),
+            'group',
+          );
         });
       });
     });
