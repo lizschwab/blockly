@@ -368,5 +368,18 @@ suite('Inputs', function () {
       // AriaLabelProvider and without setting the provider (the default label)
       assert.equal(labelA, labelB);
     });
+    test('Field labels are comma separated', function () {
+      this.block
+        .appendDummyInput('NAME')
+        .appendField(new Blockly.FieldTextInput('text'), 'NAME');
+      this.block
+        .appendDummyInput('VALUE')
+        .appendField(new Blockly.FieldNumber('number'), 'VALUE');
+
+      const label = this.block.getAriaLabel();
+      const inputLabels = this.block.inputList.map((input) => input.getLabel());
+
+      assert.include(label, inputLabels.join(', '));
+    });
   });
 });
