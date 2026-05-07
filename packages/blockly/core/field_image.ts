@@ -315,6 +315,13 @@ export class FieldImage extends Field<string> {
     return this.altText || null;
   }
 
+  override computeAriaLabel(includeTypeInfo: boolean): string {
+    if (this.isClickable()) {
+      return '';
+    }
+    return super.computeAriaLabel(includeTypeInfo);
+  }
+
   /**
    * Recomputes the ARIA role and label for this field.
    */
@@ -338,7 +345,7 @@ export class FieldImage extends Field<string> {
       this.isClickable() ? aria.Role.BUTTON : aria.Role.PRESENTATION,
     );
 
-    const label = this.computeAriaLabel(true);
+    const label = this.isClickable() ? this.getAriaValue() || '' : super.computeAriaLabel(true);
     aria.setState(focusableElement, aria.State.LABEL, label);
   }
 }
