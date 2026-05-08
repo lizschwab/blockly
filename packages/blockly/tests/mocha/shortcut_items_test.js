@@ -474,13 +474,12 @@ suite('Keyboard Shortcut Items', function () {
       [Blockly.utils.KeyCodes.CTRL_CMD],
     );
 
-    const shiftF10KeyEvent = createKeyDownEvent(
-      Blockly.utils.KeyCodes.F10,
-      [Blockly.utils.KeyCodes.SHIFT],
-    );
+    const shiftF10KeyEvent = createKeyDownEvent(Blockly.utils.KeyCodes.F10, [
+      Blockly.utils.KeyCodes.SHIFT,
+    ]);
 
     const menuKeyEvent = createKeyDownEvent(
-      Blockly.utils.KeyCodes.CONTEXT_MENU
+      Blockly.utils.KeyCodes.CONTEXT_MENU,
     );
 
     test('Displays context menu on a block using Ctrl/Cmd+Enter', function () {
@@ -533,7 +532,7 @@ suite('Keyboard Shortcut Items', function () {
       }
     });
 
-        test('Displays context menu on a block using Shift+F10', function () {
+    test('Displays context menu on a block using Shift+F10', function () {
       const block = setSelectedBlock(this.workspace);
       this.injectionDiv.dispatchEvent(shiftF10KeyEvent);
 
@@ -583,7 +582,7 @@ suite('Keyboard Shortcut Items', function () {
       }
     });
 
-        test('Displays context menu on a block using the menu button', function () {
+    test('Displays context menu on a block using the menu button', function () {
       const block = setSelectedBlock(this.workspace);
       this.injectionDiv.dispatchEvent(menuKeyEvent);
 
