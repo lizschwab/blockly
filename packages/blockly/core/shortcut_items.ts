@@ -558,13 +558,18 @@ export function registerMovementShortcuts() {
 }
 
 /**
- * Keyboard shortcut to show the context menu on ctrl/cmd+Enter.
+ * Keyboard shortcut to show the context menu on ctrl/cmd+Enter, shift+F10, and
+ * the menu key.
  */
 export function registerShowContextMenu() {
   const ctrlEnter = ShortcutRegistry.registry.createSerializedKey(
     KeyCodes.ENTER,
     [KeyCodes.CTRL_CMD],
   );
+
+  const shiftF10 = ShortcutRegistry.registry.createSerializedKey(KeyCodes.F10, [
+    KeyCodes.SHIFT,
+  ]);
 
   const contextMenuShortcut: KeyboardShortcut = {
     name: names.MENU,
@@ -582,7 +587,7 @@ export function registerShowContextMenu() {
       }
       return false;
     },
-    keyCodes: [ctrlEnter],
+    keyCodes: [ctrlEnter, shiftF10, KeyCodes.CONTEXT_MENU],
     displayText: () => Msg['SHORTCUTS_SHOW_CONTEXT_MENU'],
   };
   ShortcutRegistry.registry.register(contextMenuShortcut);
