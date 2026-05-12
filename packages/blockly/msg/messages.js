@@ -1839,7 +1839,7 @@ Blockly.Msg.WORKSPACE_CONTENTS_COMMENTS_MANY = ' and %1 comments';
 Blockly.Msg.WORKSPACE_CONTENTS_COMMENTS_ONE = ' and one comment';
 /** @type {string} */
 /// Message shown when a user presses Enter with a navigable block focused.
-Blockly.Msg.KEYBOARD_NAV_BLOCK_NAVIGATION_HINT = 'Use the right arrow key to navigate inside of blocks.';
+Blockly.Msg.KEYBOARD_NAV_BLOCK_NAVIGATION_HINT = 'Use %1 to navigate inside of blocks.';
 /** @type {string} */
 /// Message shown when a user presses Enter with the workspace focused.
 Blockly.Msg.KEYBOARD_NAV_WORKSPACE_NAVIGATION_HINT = 'Use the arrow keys to navigate.';
@@ -1880,7 +1880,7 @@ Blockly.Msg.BLOCK_LABEL_HAS_INPUTS = 'has inputs';
 /** @type {string} */
 /// Part of an accessibility label for a block that indicates that it is
 /// a statement block, i.e. that it has a next or previous connection.
-/// "command" here is used in the sense of a computer command, or a 
+/// "command" here is used in the sense of a computer command, or a
 /// command block in Scratch.
 Blockly.Msg.BLOCK_LABEL_STATEMENT = 'command';
 /** @type {string} */
@@ -2038,3 +2038,12 @@ Blockly.Msg.ICON_LABEL_WARNING_CLOSED = 'Open Warning';
 /** @type {string} */
 /// Label for an icon, used by screen readers to identify an open warning. Clicking on the icon closes the warning's bubble.
 Blockly.Msg.ICON_LABEL_WARNING_OPEN = 'Close Warning';
+/** @type {string} */
+/// ARIA label for a comment.
+Blockly.Msg.ARIA_LABEL_COMMENT = 'Comment';
+/** @type {string} */
+/// ARIA label for an expanded comment's collapse button.
+Blockly.Msg.ARIA_LABEL_COMMENT_COLLAPSE = 'Collapse Comment';
+/** @type {string} */
+/// ARIA label for a collapsed comment's expand button.
+Blockly.Msg.ARIA_LABEL_COMMENT_EXPAND = 'Expand Comment';

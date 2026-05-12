@@ -334,6 +334,16 @@ export class WorkspaceSvg
   zoomControls_: ZoomControls | null = null;
 
   /**
+   * Focus ring in the workspace.
+   */
+  private workspaceFocusRing: Element | null = null;
+
+  /**
+   * Selection ring inside the workspace.
+   */
+  private workspaceSelectionRing: Element | null = null;
+
+  /**
    * Navigator that handles moving focus between items in this workspace in
    * response to keyboard navigation commands.
    */
@@ -720,7 +730,7 @@ export class WorkspaceSvg
       );
     } else {
       // Main workspaces get labelled with how many stacks of blocks they contain
-      // This will be updated in a change listener, but set it here in case there are blocks in the initial state of the workspace
+      // This will be updated on focus, but set it here in case there are blocks in the initial state of the workspace
       this.updateAriaLabel();
     }
   }
@@ -791,20 +801,29 @@ export class WorkspaceSvg
       }
     }
 
+    this.workspaceSelectionRing = dom.createSvgElement(
+      Svg.RECT,
+      {
+        fill: 'none',
+        class: 'blocklyWorkspaceSelectionRing',
+      },
+      this.svgGroup_,
+    );
+    this.workspaceFocusRing = dom.createSvgElement(
+      Svg.RECT,
+      {
+        fill: 'none',
+        class: 'blocklyWorkspaceFocusRing',
+      },
+      this.svgGroup_,
+    );
+
     this.layerManager = new LayerManager(this);
     // Assign the canvases for backwards compatibility.
     this.svgBlockCanvas_ = this.layerManager.getBlockLayer();
     this.svgBubbleCanvas_ = this.layerManager.getBubbleLayer();
 
     this.setInitialAriaContext();
-
-    if (!this.isFlyout && !this.isMutator) {
-      // Set up a change listener to update the aria label on main workspace
-      this.addChangeListener((e) => {
-        if (e.isUiEvent) return;
-        this.updateAriaLabel();
-      });
-    }
 
     if (!this.isFlyout) {
       browserEvents.conditionalBind(
@@ -936,6 +955,9 @@ export class WorkspaceSvg
       document.body.removeEventListener('wheel', this.dummyWheelListener);
       this.dummyWheelListener = null;
     }
+
+    this.workspaceFocusRing?.remove();
+    this.workspaceSelectionRing?.remove();
 
     if (getFocusManager().isRegistered(this)) {
       getFocusManager().unregisterTree(this);
@@ -1116,6 +1138,28 @@ export class WorkspaceSvg
       this.scrollbar.resize();
     }
     this.updateScreenCalculations();
+
+    if (!this.workspaceFocusRing || !this.workspaceSelectionRing) return;
+    this.resizeWorkspaceRing(this.workspaceSelectionRing, 5);
+    this.resizeWorkspaceRing(this.workspaceFocusRing, 0);
+  }
+
+  /**
+   * Sizes the given focus/selection ring inside the bounds of the workspace.
+   *
+   * @param ring The interior workspace ring indicator to resize.
+   * @param inset How many pixels in from the bounds of the workspace the ring
+   *     should be positioned.
+   */
+  private resizeWorkspaceRing(ring: Element, inset: number) {
+    const metrics = this.getMetrics();
+    ring.setAttribute('x', `${metrics.absoluteLeft + inset}`);
+    ring.setAttribute('y', `${metrics.absoluteTop + inset}`);
+    ring.setAttribute('width', `${Math.max(0, metrics.viewWidth - inset * 2)}`);
+    ring.setAttribute(
+      'height',
+      `${Math.max(0, metrics.svgHeight - inset * 2)}`,
+    );
   }
 
   /**
@@ -1740,8 +1784,8 @@ export class WorkspaceSvg
     if (e instanceof PointerEvent) {
       location = new Coordinate(e.clientX, e.clientY);
     } else {
-      // TODO: Get the location based on the workspace cursor location
-      location = svgMath.wsToScreenCoordinates(this, new Coordinate(5, 5));
+      const x = this.RTL ? this.getWidth() - 5 : 5;
+      location = svgMath.wsToScreenCoordinates(this, new Coordinate(x, 5));
     }
 
     ContextMenu.show(e, menuOptions, this.RTL, this, location);
@@ -2696,7 +2740,11 @@ export class WorkspaceSvg
   }
 
   /** See IFocusableNode.onNodeFocus. */
-  onNodeFocus(): void {}
+  onNodeFocus(): void {
+    if (!this.isFlyout && !this.isMutator) {
+      this.updateAriaLabel();
+    }
+  }
 
   /** See IFocusableNode.onNodeBlur. */
   onNodeBlur(): void {}

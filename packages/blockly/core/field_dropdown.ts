@@ -209,6 +209,21 @@ export class FieldDropdown extends Field<string> {
   }
 
   /**
+   * This is hacky way of determining if a dropdown field is a full-block field or not.
+   * The constants that control the border rect are the same ones that determine how we
+   * render full-block dropdown fields. It's a full-block field if it doesn't have the
+   * border rect (and it's a simple reporter block).
+   *
+   * @returns true if this field should be treated as a full-block field
+   */
+  override isFullBlockField(): boolean {
+    return (
+      !this.shouldAddBorderRect_() &&
+      !!this.getSourceBlock()?.isSimpleReporter()
+    );
+  }
+
+  /**
    * Whether or not the dropdown should add a border rect.
    *
    * @returns True if the dropdown field should add a border rect.
@@ -918,27 +933,19 @@ export class FieldDropdown extends Field<string> {
   }
 
   /**
-   * Recomputes the ARIA role and label for this field.
+   * Overrides the default label and sets additional aria state.
    */
-  protected recomputeAriaContext(): void {
+  override recomputeAriaContext(): boolean {
+    const shouldCustomize = super.recomputeAriaContext();
+    if (!shouldCustomize) return false;
+
     const focusableElement = this.getFocusableElement();
-    if (!focusableElement) return;
-
-    if (this.getSourceBlock()?.isInFlyout) {
-      aria.setState(focusableElement, aria.State.HIDDEN, true);
-      return;
-    }
-
-    aria.setState(focusableElement, aria.State.HIDDEN, false);
-    // The button role is intended to indicate to users that the field has an
-    // editing mode that can be activated.
-    aria.setRole(focusableElement, aria.Role.BUTTON);
-
     const label = this.computeAriaLabel(true);
 
     aria.setState(focusableElement, aria.State.LABEL, label);
     aria.setState(focusableElement, aria.State.HASPOPUP, 'listbox');
     aria.setState(focusableElement, aria.State.EXPANDED, !!this.menu_);
+    return true;
   }
 
   /**

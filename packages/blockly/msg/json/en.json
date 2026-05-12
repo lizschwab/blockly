@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2026-05-06 14:12:59.060731",
+		"lastupdated": "2026-05-11 14:15:58.197621",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -464,7 +464,7 @@
 	"WORKSPACE_CONTENTS_BLOCKS_ZERO": "No blocks%2 in workspace.",
 	"WORKSPACE_CONTENTS_COMMENTS_MANY": " and %1 comments",
 	"WORKSPACE_CONTENTS_COMMENTS_ONE": " and one comment",
-	"KEYBOARD_NAV_BLOCK_NAVIGATION_HINT": "Use the right arrow key to navigate inside of blocks.",
+	"KEYBOARD_NAV_BLOCK_NAVIGATION_HINT": "Use %1 to navigate inside of blocks.",
 	"KEYBOARD_NAV_WORKSPACE_NAVIGATION_HINT": "Use the arrow keys to navigate.",
 	"BLOCK_LABEL_BEGIN_STACK": "Begin stack",
 	"BLOCK_LABEL_BEGIN_PREFIX": "Begin %1",
@@ -514,5 +514,8 @@
 	"ICON_LABEL_MUTATOR_CLOSED": "Edit this block",
 	"ICON_LABEL_MUTATOR_OPEN": "Close block editor",
 	"ICON_LABEL_WARNING_CLOSED": "Open Warning",
-	"ICON_LABEL_WARNING_OPEN": "Close Warning"
+	"ICON_LABEL_WARNING_OPEN": "Close Warning",
+	"ARIA_LABEL_COMMENT": "Comment",
+	"ARIA_LABEL_COMMENT_COLLAPSE": "Collapse Comment",
+	"ARIA_LABEL_COMMENT_EXPAND": "Expand Comment"
 }

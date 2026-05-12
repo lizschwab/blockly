@@ -166,7 +166,15 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
   override initView() {
     const block = this.getSourceBlock();
     if (!block) throw new UnattachedFieldError();
-    super.initView();
+
+    if (!this.isFullBlockField()) {
+      // Full-block fields don't get the border-rect element.
+      this.createBorderRect_();
+    }
+    this.createTextElement_();
+    if (this.fieldGroup_) {
+      dom.addClass(this.fieldGroup_, 'blocklyField');
+    }
 
     if (this.isFullBlockField()) {
       this.clickTarget_ = (this.sourceBlock_ as BlockSvg).getSvgRoot();
@@ -254,10 +262,9 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     if (!this.fieldGroup_) return;
 
     if (!this.isFullBlockField() && this.borderRect_) {
-      this.borderRect_!.style.display = 'block';
+      this.borderRect_.style.display = 'block';
       this.borderRect_.setAttribute('stroke', block.getColourTertiary());
     } else {
-      this.borderRect_!.style.display = 'none';
       // In general, do *not* let fields control the color of blocks. Having the
       // field control the color is unexpected, and could have performance
       // impacts.
@@ -837,29 +844,19 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
   }
 
   /**
-   * Recomputes the ARIA role and label for this field.
+   * Customizes the label for this field to include "editable" if it applies.
    */
-  protected recomputeAriaContext(): void {
-    const focusableElement = this.getClickTarget_();
-    if (!focusableElement) return;
-
-    if (this.getSourceBlock()?.isInFlyout) {
-      aria.setState(focusableElement, aria.State.HIDDEN, true);
-      return;
-    }
-
-    aria.setState(focusableElement, aria.State.HIDDEN, false);
-    // The button role is intended to indicate to users that the field has an
-    // editing mode that can be activated.
-    aria.setRole(focusableElement, aria.Role.BUTTON);
+  override recomputeAriaContext(): boolean {
+    const shouldCustomize = super.recomputeAriaContext();
+    if (!shouldCustomize) return false;
+    const focusableElement = this.getFocusableElement();
 
     let label = this.computeAriaLabel(true);
-
-    if (this.isCurrentlyEditable?.()) {
+    if (this.isCurrentlyEditable() && !this.getSourceBlock()?.isInFlyout) {
       label = Msg['FIELD_LABEL_EDIT_PREFIX'].replace('%1', label);
     }
-
     aria.setState(focusableElement, aria.State.LABEL, label);
+    return true;
   }
 }
 
