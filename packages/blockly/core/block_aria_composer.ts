@@ -166,8 +166,6 @@ export function computeFieldRowLabel(
           const label = adjacentFieldLabels.join(' ');
           adjacentFieldLabels = [];
           return label;
-        } else {
-          return field.computeAriaLabel(includeTypeInfo);
         }
       }
       return field.computeAriaLabel(includeTypeInfo);
