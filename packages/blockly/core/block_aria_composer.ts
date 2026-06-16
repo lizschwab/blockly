@@ -325,7 +325,6 @@ export function getInputLabels(
       index < inputs.length - 1 &&
       endsWithFieldLabel(input) &&
       beginsWithFieldLabel(inputs[index + 1]) &&
-      // getVisualRowId(input) === getVisualRowId(inputs[index + 1])
       !isEndOfRow(input, inputs[index + 1])
     ) {
       // This input ends with a field label and the next one begins with one.
