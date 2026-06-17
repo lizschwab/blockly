@@ -396,9 +396,9 @@ suite('Inputs', function () {
           assert.include(label, 'third fourth');
         });
         test('Statement inputs are not combined', function () {
-          const statementBlock = Blockly.Xml.domToBlock(
-            Blockly.utils.xml.textToDom('<block type="empty_block"/>'),
+          const statementBlock = createRenderedBlock(
             this.workspace,
+            'empty_block',
           );
           statementBlock.appendDummyInput().appendField('first');
           statementBlock

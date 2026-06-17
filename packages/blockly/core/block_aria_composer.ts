@@ -348,7 +348,6 @@ export function getInputLabels(
 /**
  * Returns whether an input's list of visible fields begins with a FieldLabel
  *
- * @internal
  * @param input the input to be evaluated
  * @returns a boolean indicating whether the input's first visible field is of
  * type FieldLabel
@@ -361,7 +360,6 @@ function beginsWithFieldLabel(input: Input): boolean {
 /**
  * Returns whether an input's list of visible fields ends with a FieldLabel
  *
- * @internal
  * @param input the input to be evaluated
  * @returns a boolean indicating whether the input's last visible field is of
  * type FieldLabel
