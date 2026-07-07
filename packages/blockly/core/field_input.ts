@@ -30,6 +30,7 @@ import {getFocusManager} from './focus_manager.js';
 import type {IFocusableNode} from './interfaces/i_focusable_node.js';
 import {Msg} from './msg.js';
 import * as renderManagement from './render_management.js';
+import {Svg} from './utils.js';
 import * as aria from './utils/aria.js';
 import {Verbosity} from './utils/aria.js';
 import * as dom from './utils/dom.js';
@@ -82,7 +83,7 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
   /**
    * The warning icon to display on invalid input
    */
-  protected warningIcon: HTMLImageElement | null = null;
+  protected warningIcon: SVGElement | null = null;
 
   /**
    * The intial value of the field when the user opened an editor to change its
@@ -202,29 +203,52 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
   }
 
   /** Creates the DOM elements for the invalid input warning icon. */
-  private createWarningIcon(parent?: Element | null): HTMLImageElement | null {
+  protected createWarningIcon(): SVGElement | null {
     const sourceBlock = this.sourceBlock_ as BlockSvg;
     if (!sourceBlock) {
       return null;
     }
-
     const bBox = this.getScaledBBox();
     const bBoxHeight = bBox.bottom - bBox.top;
-    const e = document.createElement('img');
-    e.setAttribute('class', 'blocklyInputWarning');
-    e.setAttribute(
-      'src',
-      `${sourceBlock.workspace.options.pathToMedia}input-warning-icon.svg`,
-    );
-    e.setAttribute('x', `0`);
-    e.setAttribute('y', `0`);
-    e.setAttribute('height', `${bBoxHeight}px`);
-    e.setAttribute('width', `${bBoxHeight}px`);
-    e.setAttribute('float', 'inline-start');
 
-    if (parent) {
-      parent.appendChild(e);
-    }
+    const e = dom.createSvgElement(Svg.SVG, {
+      'class': 'blocklyInputWarning',
+      'viewBox': '-4 0 24 16',
+      'x': '0',
+      'y': '0',
+      'height': `${bBoxHeight}px`,
+      'width': `${bBoxHeight}px`,
+      'float': 'inline-start',
+    });
+    dom.createSvgElement(
+      Svg.PATH,
+      {
+        'd': 'M2,15Q-1,15 0.5,12L6.5,1.7Q8,-1 9.5,1.7L15.5,12Q17,15 14,15z',
+        'stroke': '#1f1f1f',
+        'stroke-width': '1px',
+        'fill': 'none',
+      },
+      e,
+    );
+    dom.createSvgElement(
+      Svg.PATH,
+      {
+        'd': 'm7,4.8v3.16l0.27,2.27h1.46l0.27,-2.27v-3.16z',
+        'fill': '#1f1f1f',
+      },
+      e,
+    );
+    dom.createSvgElement(
+      Svg.RECT,
+      {
+        'x': '7',
+        'y': '11',
+        'height': '2',
+        'width': '2',
+        'fill': '#1f1f1f',
+      },
+      e,
+    );
 
     return e;
   }
@@ -353,41 +377,12 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     // doValueUpdate_ so that the code is more centralized.
     if (this.isBeingEdited_) {
       const htmlInput = this.htmlInput_ as HTMLElement;
+      this.renderWarningIcon(block.RTL, this.isTextValid_);
       if (!this.isTextValid_) {
         dom.addClass(htmlInput, 'blocklyInvalidInput');
         aria.setState(htmlInput, aria.State.INVALID, true);
-        // insert the icon
-        if (this.warningIcon && htmlInput) {
-          const bBox = this.getScaledBBox();
-          const hasBorder = !!this.borderRect_;
-          const xPadding = hasBorder
-            ? this.getConstants()!.FIELD_BORDER_RECT_X_PADDING
-            : (bBox.bottom - bBox.top) / 2;
-          dom.addClass(this.warningIcon, 'blocklyInputWarningInvalid');
-          htmlInput.setAttribute(
-            'width',
-            `${htmlInput.offsetWidth + this.warningIcon.width}px`,
-          );
-          // If we pad by the whole icon width, it looks too far from the
-          // text, and half the width looks too close.
-          const iconPadding = this.warningIcon.width / 1.5;
-          if (block.RTL) {
-            htmlInput.style.paddingRight = `${iconPadding}px`;
-          } else {
-            htmlInput.style.paddingLeft = `${iconPadding}px`;
-          }
-          this.size_.width = this.warningIcon.width;
-          const iconOffset = hasBorder
-            ? this.getConstants()!.FIELD_TEXT_HEIGHT -
-              this.getConstants()!.FIELD_BORDER_RECT_X_PADDING
-            : 0;
-          this.updateSize_(xPadding + iconOffset);
-        }
       } else {
         dom.removeClass(htmlInput, 'blocklyInvalidInput');
-        if (this.warningIcon) {
-          dom.removeClass(this.warningIcon, 'blocklyInputWarningInvalid');
-        }
         aria.setState(htmlInput, aria.State.INVALID, false);
       }
     }
@@ -400,6 +395,44 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     if (this.getConstants()!.FULL_BLOCK_FIELDS) block.applyColour();
   }
 
+  protected renderWarningIcon(rtl: boolean, isValid: boolean) {
+    const htmlInput = this.htmlInput_ as HTMLElement;
+
+    if (this.warningIcon) {
+      if (isValid) {
+        htmlInput.style.paddingRight = '';
+        htmlInput.style.paddingLeft = '';
+        dom.removeClass(this.warningIcon, 'blocklyInputWarningInvalid');
+      } else {
+        const bBox = this.getScaledBBox();
+        const bBoxHeight = bBox.bottom - bBox.top;
+        const hasBorder = !!this.borderRect_;
+        const xPadding = hasBorder
+          ? this.getConstants()!.FIELD_BORDER_RECT_X_PADDING
+          : bBoxHeight / 2;
+        dom.addClass(this.warningIcon, 'blocklyInputWarningInvalid');
+        const iconWidth = this.warningIcon.getBoundingClientRect().width;
+        htmlInput.setAttribute(
+          'width',
+          `${htmlInput.offsetWidth + iconWidth}px`,
+        );
+        // If we pad by the whole icon width, it looks too far from the
+        // text, and half the width looks too close.
+        const iconPadding = iconWidth / 1.5;
+        if (rtl) {
+          htmlInput.style.paddingRight = `${iconPadding}px`;
+        } else {
+          htmlInput.style.paddingLeft = `${iconPadding}px`;
+        }
+        this.size_.width = iconWidth;
+        const iconOffset = hasBorder
+          ? this.getConstants()!.FIELD_TEXT_HEIGHT -
+            this.getConstants()!.FIELD_BORDER_RECT_X_PADDING
+          : 0;
+        this.updateSize_(xPadding + iconOffset);
+      }
+    }
+  }
   /**
    * Set whether this field is spellchecked by the browser.
    *
