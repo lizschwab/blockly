@@ -30,11 +30,11 @@ import {getFocusManager} from './focus_manager.js';
 import type {IFocusableNode} from './interfaces/i_focusable_node.js';
 import {Msg} from './msg.js';
 import * as renderManagement from './render_management.js';
-import {Svg} from './utils.js';
 import * as aria from './utils/aria.js';
 import {Verbosity} from './utils/aria.js';
 import * as dom from './utils/dom.js';
 import {Size} from './utils/size.js';
+import {Svg} from './utils/svg.js';
 import * as userAgent from './utils/useragent.js';
 import * as WidgetDiv from './widgetdiv.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
@@ -218,34 +218,31 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
       'y': '0',
       'height': `${bBoxHeight}px`,
       'width': `${bBoxHeight}px`,
-      'float': 'inline-start',
     });
     dom.createSvgElement(
       Svg.PATH,
       {
+        'class': 'blocklyInputWarningIconShape',
         'd': 'M2,15Q-1,15 0.5,12L6.5,1.7Q8,-1 9.5,1.7L15.5,12Q17,15 14,15z',
-        'stroke': '#1f1f1f',
-        'stroke-width': '1px',
-        'fill': 'none',
       },
       e,
     );
     dom.createSvgElement(
       Svg.PATH,
       {
+        'class': 'blocklyInputWarningIconSymbol',
         'd': 'm7,4.8v3.16l0.27,2.27h1.46l0.27,-2.27v-3.16z',
-        'fill': '#1f1f1f',
       },
       e,
     );
     dom.createSvgElement(
       Svg.RECT,
       {
+        'class': 'blocklyInputWarningIconSymbol',
         'x': '7',
         'y': '11',
         'height': '2',
         'width': '2',
-        'fill': '#1f1f1f',
       },
       e,
     );
@@ -1029,6 +1026,14 @@ export type FieldInputValidator<T extends InputTypes> = FieldValidator<
 >;
 
 css.register(`
+  .blocklyInputWarningIconShape {
+    stroke: #1f1f1f;
+    stroke-width: 1px;
+    fill: none;
+  }
+  .blocklyInputWarningIconSymbol {
+    fill: #1f1f1f;
+  }
   .blocklyInputWarning {
     display: none;
     position: absolute;
