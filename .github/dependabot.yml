@@ -18,7 +18,7 @@ updates:
     groups:
       docusaurus:
         patterns:
-          - "@docusaurus/*"
+          - '@docusaurus/*'
   - package-ecosystem: 'github-actions' # See documentation for possible values
     directory: '/'
     target-branch: 'main'
