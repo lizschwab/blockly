@@ -323,8 +323,8 @@ export default defineConfig(
   },
   {
     files: [
-      'packages/theme-*/**',
-      'packages/dev-tools/**'
+      'packages/plugins/theme-*/**',
+      'packages/plugins/dev-tools/**'
     ],
     languageOptions: {
       globals: {

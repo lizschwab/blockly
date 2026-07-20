@@ -27,8 +27,8 @@ module.exports = {
     },
     {
       files: [
-        'packages/theme-*/**/*',
-        'packages/dev-tools/**/*'
+        'packages/plugins/theme-*/**/*',
+        'packages/plugins/dev-tools/**/*'
       ],
       options: {
         // Some properties must be quoted to preserve closure compiler behavior.
