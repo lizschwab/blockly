@@ -18,12 +18,12 @@
   "private": true,
   "workspaces": [
     "packages/blockly",
-    "packages/theme-dark",
-    "packages/theme-deuteranopia",
-    "packages/theme-hackermode",
-    "packages/theme-highcontrast",
-    "packages/theme-modern",
-    "packages/theme-tritanopia",
+    "packages/plugins/theme-dark",
+    "packages/plugins/theme-deuteranopia",
+    "packages/plugins/theme-hackermode",
+    "packages/plugins/theme-highcontrast",
+    "packages/plugins/theme-modern",
+    "packages/plugins/theme-tritanopia",
     "packages/dev-tools",
     "packages/docs"
   ],
