@@ -353,7 +353,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['packages/theme-*/**'],
+    files: ['packages/plugins/theme-*/**'],
     rules: {
             'no-invalid-this': 'off',
       // valid-jsdoc does not work properly for interface methods.

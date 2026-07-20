@@ -17,7 +17,9 @@
   "author": "Raspberry Pi Foundation",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/blockly",
+    "packages/docs",
+    "packages/plugins/*"
   ],
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
