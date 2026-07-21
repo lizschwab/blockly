@@ -154,7 +154,6 @@ export default defineConfig(
       'packages/blockly/typings/*',
       'packages/blockly/docs/*',
       // Core Tests other than mocha unit tests
-      // Core Tests other than mocha unit tests
       'packages/blockly/tests/blocks/*',
       'packages/blockly/tests/themes/*',
       'packages/blockly/tests/compile/*',
@@ -164,7 +163,6 @@ export default defineConfig(
       'packages/blockly/tests/screenshot/*',
       'packages/blockly/tests/test_runner.js',
       'packages/blockly/tests/workspace_svg/*',
-      // Core Demos, scripts, misc
       // Core Demos, scripts, misc
       'packages/blockly/generators/*',
       'packages/blockly/demos/*',
