@@ -24,7 +24,7 @@
     "packages/plugins/theme-highcontrast",
     "packages/plugins/theme-modern",
     "packages/plugins/theme-tritanopia",
-    "packages/dev-tools",
+    "packages/plugins/dev-tools",
     "packages/docs"
   ],
   "devDependencies": {
