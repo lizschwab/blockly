@@ -47,12 +47,12 @@
     "dat.gui": "^0.7.9",
     "lodash.assign": "^4.2.0",
     "lodash.merge": "^4.6.2",
-    "monaco-editor": "^0.55.1",
-    "sinon": "^22.0.0"
+    "monaco-editor": "^0.55.1"
   },
   "devDependencies": {
     "@blockly/dev-scripts": "^13.1.0",
-    "@types/dat.gui": "^0.7.13"
+    "@types/dat.gui": "^0.7.13",
+    "sinon": "^22.0.0"
   },
   "peerDependencies": {
     "blockly": "^13.1.1"
