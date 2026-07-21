@@ -1289,7 +1289,7 @@ suite('Blocks', function () {
       });
     });
     suite('Add Connections Programmatically', function () {
-      test('Output', async function () {
+      test('Output', function () {
         const block = createRenderedBlock(this.workspace, 'empty_block');
 
         block.setOutput(true);
@@ -1908,7 +1908,7 @@ suite('Blocks', function () {
         function getFocusableAriaLabel(iFocusable) {
           return iFocusable.getFocusableElement().getAttribute('aria-label');
         }
-        test('Bubble has ARIA label', async function () {
+        test('Bubble has ARIA label', function () {
           assert.isTrue(
             this.bubble.focusableElement.hasAttribute('aria-label'),
           );
@@ -1918,7 +1918,7 @@ suite('Blocks', function () {
           assert.include(label, 'Warning');
           assert.include(label, 'Something went wrong');
         });
-        test('Bubble has ARIA role of group', async function () {
+        test('Bubble has ARIA role of group', function () {
           assert.equal(
             this.bubble.focusableElement.getAttribute('role'),
             'group',
