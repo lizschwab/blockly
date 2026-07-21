@@ -1441,7 +1441,7 @@ suite('Keyboard Shortcut Items', function () {
       assert.strictEqual(Blockly.getFocusManager().getFocusedNode(), stack1);
     });
 
-    test('Next stack from nested element', async function () {
+    test('Next stack from nested element', function () {
       const icon = this.block1.getIcon(Blockly.icons.MutatorIcon.TYPE);
       Blockly.getFocusManager().focusNode(icon);
       this.injectionDiv.dispatchEvent(keyNextStack());
