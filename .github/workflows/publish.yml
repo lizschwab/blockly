@@ -119,6 +119,7 @@ jobs:
           fi
 
       - name: Create tarball
+        if: ${{ !inputs.dry_run }}
         working-directory: packages/blockly
         run: npm pack ./dist
         
