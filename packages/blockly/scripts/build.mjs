@@ -1,29 +1,29 @@
-import { pipeline } from 'node:stream/promises';
-import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { Readable, Transform } from 'node:stream';
-import { dirname } from 'node:path';
-import { glob } from 'node:fs/promises';
-// Original way of importing
-// import {gulp as closureCompiler} from 'google-closure-compiler';
+import {createReadStream, createWriteStream} from 'node:fs';
+import {
+  appendFile,
+  glob,
+  mkdir,
+  readFile,
+  rename,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
+import {dirname} from 'node:path';
+import {Readable, Transform} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 
-import closureCompiler from 'google-closure-compiler';
 import {globSync} from 'glob';
+import {compiler as ClosureCompiler} from 'google-closure-compiler';
+import {getNativeImagePath} from 'google-closure-compiler/lib/utils.js';
 import * as path from 'path';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 
 import {getPackageJson} from './gulpfiles/helper_tasks.mjs';
 
-import {posixPath, quote} from './helpers.js';
+import {posixPath} from './helpers.js';
 
 const argv = yargs(hideBin(process.argv)).parse();
-const { compiler: ClosureCompiler } = closureCompiler;
-// Claud's closure compiler bin import
-// const CLOSURE_COMPILER_BIN = require.resolve('google-closure-compiler/cli.js');
-
-// My attempt to translate the above from CJS to an import
-// import * as CLOSURE_COMPILER_BIN from 'google-closure-compiler/cli.js';
 
 // Paths are all relative to the repository root.  Do not include
 // trailing slash.
@@ -197,43 +197,6 @@ for (let i = 1; i < chunks.length; i++) {
 }
 
 /**
- * Helper method that applies a transformation onto a data stream, replacing the
- * matched pattern with the provided string.
- * 
- * @param {RegExp} search A regular expression pattern you wish to find
- * @param {string} replace A string you wish to replace it with
- * @returns 
- */
-function replaceStream(search, replace) {
-  let tail = '';
-  return new Transform({
-    transform(chunk, encoding, callback) {
-      let content = tail + chunk.toString('utf8');
-      
-      if (search instanceof RegExp) {
-        content = content.replace(search, replace);
-        tail = '';
-      } else {
-        const overlapSize = search.length - 1;
-        if (overlapSize > 0 && content.length > overlapSize) {
-          tail = content.slice(-overlapSize);
-          content = content.slice(0, -overlapSize);
-        } else {
-          tail = '';
-        }
-        content = content.replaceAll(search, replace);
-      }
-      this.push(content);
-      callback();
-    },
-    flush(callback) {
-      if (tail) this.push(tail);
-      callback();
-    }
-  });
-}
-
-/**
  * Return the name of the module object for the entrypoint of the
  * given chunk, as munged by Closure Compiler.
  *
@@ -245,7 +208,7 @@ function replaceStream(search, replace) {
  * Nevertheless, this function can still be used to compute the
  * location of @defined variables, because --define directives are
  * processed before the final renaming occurs.
- */ 
+ */
 function modulePath(chunk) {
   const entryPath = path.posix.join(TSC_OUTPUT_DIR_POSIX, chunk.entry);
   return 'module$' + entryPath.replace(/\.js$/, '').replaceAll('/', '$');
@@ -260,14 +223,26 @@ const licenseRegex = `\\/\\*\\*
 
 /**
  * Helper method for stripping the Google's and MIT's Apache Licenses.
+ *
+ * @param {!Array<string>} filePaths Files to rewrite.
  */
-function stripApacheLicense() {
-  // Strip out Google's and MIT's Apache licences.
-  // Closure Compiler preserves dozens of Apache licences in the Blockly code.
-  // Remove these if they belong to Google or MIT.
-  // MIT's permission to do this is logged in Blockly issue #2412.
-  return replaceStream(new RegExp(licenseRegex, 'g'), '\n\n\n\n');
-  // Replace with the same number of lines so that source-maps are not affected.
+async function stripApacheLicenses(filePaths) {
+  await Promise.all(
+    filePaths.map(async (filePath) => {
+      const source = await readFile(filePath, 'utf8');
+      // Strip out Google's and MIT's Apache licences.
+      // Closure Compiler preserves dozens of Apache licences in the Blockly code.
+      // Remove these if they belong to Google or MIT.
+      // MIT's permission to do this is logged in Blockly issue #2412.
+      const stripped = source.replace(
+        new RegExp(licenseRegex, 'g'),
+        '\n\n\n\n',
+      );
+      // Replace with the same number of lines so that source-maps are
+      // not affected.
+      if (stripped !== source) await writeFile(filePath, stripped);
+    }),
+  );
 }
 
 /**
@@ -315,27 +290,26 @@ const JSCOMP_OFF = [
 ];
 
 async function globsToArray(globPatterns) {
-    const filePaths = [];
-      for await (const file of glob(globPatterns)) {
-        filePaths.push(file);
-      }
-      return filePaths;
+  const filePaths = [];
+  for await (const file of glob(globPatterns)) {
+    filePaths.push(file);
   }
-
+  return filePaths;
+}
 /**
  * Helper function that takes in a list of src patterns, a destination file, and
- * a list of transforms to apply and returns a pipeline that writes to the 
+ * a list of transforms to apply and returns a pipeline that writes to the
  * destination file path.
- * 
+ *
  * @param {Array<string>} globPatterns The patterns to match for the input files
  * @param {string} destFile The path of the destination file
- * @param  {...Transform} transforms The transformations to pipe the data 
+ * @param  {...Transform} transforms The transformations to pipe the data
  * through
- * @returns 
+ * @returns
  */
-  async function concatPipeline(globPatterns, destFile, ...transforms) {
+async function concatPipeline(globPatterns, destFile, ...transforms) {
   // Ensure the destination directory exists
-  await mkdir(dirname(destFile), { recursive: true });
+  await mkdir(dirname(destFile), {recursive: true});
 
   // Get an array of all matching files
   const filePaths = await globsToArray(globPatterns);
@@ -354,11 +328,7 @@ async function globsToArray(globPatterns) {
   const combinedReadable = Readable.from(mergeFiles());
 
   // Pipe everything through your transforms to the final file
-  return pipeline(
-    combinedReadable,
-    ...transforms,
-    createWriteStream(destFile)
-  );
+  return pipeline(combinedReadable, ...transforms, createWriteStream(destFile));
 }
 
 /**
@@ -590,12 +560,19 @@ function getChunkOptions() {
   return {chunk: chunkOptions, js: allFiles, chunk_wrapper: chunkWrappers};
 }
 
-// /**
-//  * Helper method for calling the Closure Compiler, establishing
-//  * default options (that can be overridden by the caller).
-//  * @param {*} options Caller-supplied options that will override the
-//  *     defaultOptions.
-//  */
+/**
+ * Helper method for calling the Closure Compiler, establishing
+ * default options (that can be overridden by the caller).
+ *
+ * The compiler reads its inputs from and writes its outputs to disk,
+ * so the caller is expected to supply --js and either --js_output_file
+ * or --chunk_output_path_prefix.
+ *
+ * @param {{[flag: string]: string|boolean|!Array<string>}} options
+ *     Caller-supplied options that will override the defaultOptions.
+ * @return {!Promise<string>} Resolves with the compiler's stdout once
+ *     it exits successfully; rejects if it exits non-zero.
+ */
 function compile(options) {
   const defaultOptions = {
     compilation_level: 'SIMPLE_OPTIMIZATIONS',
@@ -614,108 +591,37 @@ function compile(options) {
       defaultOptions.jscomp_error.push('strictCheckTypes');
     }
   }
-  // Extra options for Closure Compiler.
-  const platform = ['native'];
+  
+  const compilerInstance = new ClosureCompiler({...defaultOptions, ...options});
 
-  const compilerOptions = {...defaultOptions, ...options};
-  console.log(compilerOptions);
-  const compilerInstance = new ClosureCompiler(compilerOptions, [{platform}]);
-
-  return compilerInstance.run((exitCode, stdout, stderr) => {
-  if (exitCode === 0) {
-    console.log('Compilation successful!');
-    if (stdout) console.log(stdout);
-  } else {
-    console.error('Compilation failed:');
-    console.error(stderr);
+  // google-closure-compiler's node API always shells out to `java`
+  // unless JAR_PATH is cleared; only its gulp and grunt plugins know
+  // about the platform-native binaries.  Do what those plugins do, so
+  // that a JRE isn't needed on platforms we ship a binary for.  See
+  // getFirstSupportedPlatform() in google-closure-compiler/lib/utils.js.
+  const nativeImagePath = getNativeImagePath();
+  if (nativeImagePath) {
+    compilerInstance.JAR_PATH = null;
+    compilerInstance.javaPath = nativeImagePath;
+  } else if (!process.env.JAVA_HOME) {
+    throw new Error(
+      'No native Closure Compiler binary for this platform and no JRE ' +
+        'found; set JAVA_HOME or install google-closure-compiler-<platform>.',
+    );
   }
-});
+
+  return new Promise((resolve, reject) => {
+    compilerInstance.run((exitCode, stdout, stderr) => {
+      // Diagnostics go to stderr even when compilation succeeds.
+      if (stderr) process.stderr.write(stderr);
+      if (exitCode === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`Closure Compiler exited with code ${exitCode}.`));
+      }
+    });
+  });
 }
-
-// Exact copy of the original compile() method
-
-// /**
-//  * Helper method for calling the Closure Compiler, establishing
-//  * default options (that can be overridden by the caller).
-//  * @param {*} options Caller-supplied options that will override the
-//  *     defaultOptions.
-//  */
-// function compile(options) {
-//   const defaultOptions = {
-//     compilation_level: 'SIMPLE_OPTIMIZATIONS',
-//     warning_level: argv.verbose ? 'VERBOSE' : 'DEFAULT',
-//     language_in: 'ECMASCRIPT_2020',
-//     language_out: 'ECMASCRIPT_2015',
-//     jscomp_off: [...JSCOMP_OFF],
-//     rewrite_polyfills: true,
-//     hide_warnings_for: ['node_modules'],
-//     define: ['COMPILED=true'],
-//   };
-//   if (argv.debug || argv.strict) {
-//     defaultOptions.jscomp_error = [...JSCOMP_ERROR];
-//     defaultOptions.jscomp_warning = [...JSCOMP_WARNING];
-//     if (argv.strict) {
-//       defaultOptions.jscomp_error.push('strictCheckTypes');
-//     }
-//   }
-//   // Extra options for Closure Compiler gulp plugin.
-//   const platform = ['native'];
-
-//   return closureCompiler({...defaultOptions, ...options}, {platform});
-// }
-
-// Claud's suggestion for how to use the bin directly
-
-// function toCliArgs(options) {
-//   const args = [];
-//   for (const [key, value] of Object.entries(options)) {
-//     if (Array.isArray(value)) {
-//       for (const v of value) args.push(`--${key}=${v}`);
-//     } else if (value === true) {
-//       args.push(`--${key}`);
-//     } else {
-//       args.push(`--${key}=${value}`);
-//     }
-//   }
-//   return args;
-// }
-
-// async function compile(options) {
-//   const defaultOptions = {
-//     compilation_level: 'SIMPLE_OPTIMIZATIONS',
-//     warning_level: argv.verbose ? 'VERBOSE' : 'DEFAULT',
-//     language_in: 'ECMASCRIPT_2020',
-//     language_out: 'ECMASCRIPT_2015',
-//     jscomp_off: [...JSCOMP_OFF],
-//     rewrite_polyfills: true,
-//     hide_warnings_for: ['node_modules'],
-//     define: ['COMPILED=true'],
-//     platform: 'native', // no JRE needed; documented CLI flag
-//   };
-
-//   if (argv.debug || argv.strict) {
-//     defaultOptions.jscomp_error = [...JSCOMP_ERROR];
-//     defaultOptions.jscomp_warning = [...JSCOMP_WARNING];
-//     if (argv.strict) defaultOptions.jscomp_error.push('strictCheckTypes');
-//   }
-
-//   const compilerOptions = { ...defaultOptions, ...options };
-//   const args = toCliArgs(compilerOptions);
-
-//   try {
-//     const { stdout, stderr } = execFile(
-//       process.execPath,               // node itself
-//       [CLOSURE_COMPILER_BIN, ...args],
-//       { maxBuffer: 1024 * 1024 * 50 }
-//     );
-//     console.log('Compilation successful!');
-//     if (stdout) console.log(stdout);
-//     return stdout;
-//   } catch (err) {
-//     console.error('Compilation failed:', err.stderr || err.message);
-//     throw err;
-//   }
-// }
 
 /**
  * This task compiles the core library, blocks and generators, creating
@@ -737,65 +643,49 @@ async function buildCompiled() {
     // by the time --define is processed.)  See
     // https://github.com/google/closure-compiler/issues/1601#issuecomment-483452226
     define: `VERSION$$${modulePath(chunks[0])}='${packageJson.version}'`,
+    js: chunkOptions.js,
     chunk: chunkOptions.chunk,
     chunk_wrapper: chunkOptions.chunk_wrapper,
-    // Don't supply the list of source files in chunkOptions.js as an
-    // option to Closure Compiler; instead feed them as input via gulp.src.
+    // Closure writes one file per chunk, named after the chunk, so
+    // this produces e.g. dist/blockly.js; the COMPILED_SUFFIX is added
+    // below.
+    chunk_output_path_prefix: `${RELEASE_DIR}/`,
+    create_source_map: '%outname%.map',
     rename_prefix_namespace: NAMESPACE_VARIABLE,
     assume_function_wrapper: true,
   };
+
+  await stripApacheLicenses(chunkOptions.js);
   // Ensure the destination directory exists
   await mkdir(RELEASE_DIR, {recursive: true});
+  await compile(options);
 
-  // Get an array of all matching files
-  // const filePaths = await globsToArray(chunkOptions.js);
-  const filePaths = ['build/src/chunk_exporters/blockly_exporter.js']
+  // Closure names each chunk's output after the chunk itself and has
+  // no equivalent of gulp-rename, so add COMPILED_SUFFIX here, fixing
+  // up the source map's reference to its own output file as we go.  It
+  // also doesn't emit the sourceMappingURL comment that gulp-sourcemaps
+  // used to append.
+  for (const chunk of chunks) {
+    const compiledPath = path.join(RELEASE_DIR, `${chunk.name}.js`);
+    const outputName = `${chunk.name}${COMPILED_SUFFIX}.js`;
+    const outputPath = path.join(RELEASE_DIR, outputName);
 
-  for (const filePath of filePaths) {
-    const fileName = path.basename(filePath);
-    const destPath = path.join(RELEASE_DIR, fileName);
-    const readStream = createReadStream(filePath);
-    const writeStream = createWriteStream(destPath);
+    const sourceMap = JSON.parse(await readFile(`${compiledPath}.map`, 'utf8'));
+    sourceMap.file = outputName;
+    // Closure can only embed source content that its inputs' own source
+    // maps carry, and tsc's don't carry any, so read the originals off
+    // disk.  Paths in .sources are relative to the package root.
+    sourceMap.sourcesContent = await Promise.all(
+      sourceMap.sources.map((source) =>
+        readFile(source, 'utf8').catch(() => null),
+      ),
+    );
+    await writeFile(`${outputPath}.map`, JSON.stringify(sourceMap));
+    await unlink(`${compiledPath}.map`);
 
-    try {
-      await pipeline(
-        readStream,
-      stripApacheLicense(),
-      // sourcemaps? (probably not)
-      compile(options),
-      // rename - is this necessary, if we're taking the file name?
-      writeStream
-      );
-      console.log(`Processed ${fileName} -> ${destPath}`)
-    } catch (err) {
-      // TODO: better error handling
-      console.error('oh no!', err);
-    }
+    await rename(compiledPath, outputPath);
+    await appendFile(outputPath, `\n//# sourceMappingURL=${outputName}.map\n`);
   }
-
-
-  // try {
-  //   await concatPipeline(
-  //     chunkOptions.js,
-  //     RELEASE_DIR, // This needs to be a filename; need to see how it was building out filenames before
-  //     stripApacheLicense(),
-  //     // sourcemaps? (probably not)
-  //     compile(options)
-  //     // rename - is this necessary, if we're taking the file name?
-  //   )
-  // } catch (err) {
-  //   console.error('oh no!', err)
-  // }
-
-  // Fire up compilation pipline.
-  // return gulp
-  //   .src(chunkOptions.js, {base: './'})
-  //   .pipe(stripApacheLicense())
-  //   .pipe(sourcemaps.init())
-  //   .pipe(compile(options))
-  //   .pipe(rename({suffix: COMPILED_SUFFIX}))
-  //   .pipe(sourcemaps.write('.'))
-  //   .pipe(gulp.dest(RELEASE_DIR));
 }
 
 
@@ -822,7 +712,7 @@ async function compileAdvancedCompilationTest() {
     'tests/compile/test_blocks.js',
   ];
 
-    // Closure Compiler options.
+  // Closure Compiler options.
   const options = {
     dependency_mode: 'PRUNE',
     compilation_level: 'ADVANCED_OPTIMIZATIONS',
@@ -832,10 +722,10 @@ async function compileAdvancedCompilationTest() {
 
   try {
     await concatPipeline(
-      srcs, 
-      './tests/compile/main_compressed.js',       
+      srcs,
+      './tests/compile/main_compressed.js',
       // sourcemaps?
-      // compile 
+      // compile
     );
     console.log('Scripts bundled successfully!');
   } catch (err) {
@@ -854,4 +744,3 @@ async function minify() {
 
 // compileAdvancedCompilationTest();
 minify();
-
